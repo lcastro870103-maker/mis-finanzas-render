@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Registra y consulta tus ingresos y gastos.">
+    <title>Mis Finanzas</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    >
+    <link href="/styles.css" rel="stylesheet">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="/">Mis Finanzas</a>
+        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 gap-sm-3">
+          <a class="nav-link text-white" href="https://sheets.google.com/" target="_blank" rel="noopener noreferrer">
+            Google Sheets
+          </a>
+          <a class="nav-link text-white" href="https://drive.google.com/" target="_blank" rel="noopener noreferrer">
+            Google Drive
+          </a>
+          <button id="cerrar-sesion" class="btn btn-sm btn-outline-light" type="button" hidden>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4 py-lg-5">
+      <section id="login-panel" class="card login-card mx-auto" hidden>
+        <div class="card-body p-4">
+          <h1 class="h3 mb-2">Iniciar sesión</h1>
+          <p class="text-secondary">Ingresa la contraseña de demostración para continuar.</p>
+          <div id="login-message" class="alert alert-danger" role="alert" hidden></div>
+          <form id="form-login">
+            <label for="password-demo" class="form-label">Contraseña</label>
+            <input
+              id="password-demo"
+              name="password"
+              type="password"
+              class="form-control mb-3"
+              autocomplete="current-password"
+              required
+            >
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+          </form>
+        </div>
+      </section>
+
+      <div id="app-content" hidden>
+      <header class="mb-4">
+        <h1 class="h2 mb-1">Control de ingresos y gastos</h1>
+        <p class="text-secondary mb-0">Organiza tus movimientos de forma sencilla.</p>
+      </header>
+
+      <div id="mensaje" class="alert d-none" role="status" aria-live="polite"></div>
+
+      <section class="row g-3 mb-4" aria-label="Resumen del periodo">
+        <div class="col-12 col-md-4">
+          <article class="card summary-card h-100">
+            <div class="card-body">
+              <h2 class="h6 text-secondary">Ingresos</h2>
+              <p id="total-ingresos" class="h3 mb-0 text-success">$0.00</p>
+            </div>
+          </article>
+        </div>
+        <div class="col-12 col-md-4">
+          <article class="card summary-card h-100">
+            <div class="card-body">
+              <h2 class="h6 text-secondary">Gastos</h2>
+              <p id="total-gastos" class="h3 mb-0 text-danger">$0.00</p>
+            </div>
+          </article>
+        </div>
+        <div class="col-12 col-md-4">
+          <article class="card summary-card h-100">
+            <div class="card-body">
+              <h2 class="h6 text-secondary">Saldo</h2>
+              <p id="total-saldo" class="h3 mb-0">$0.00</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-sm-6 col-lg-3">
+              <label for="filtro-mes" class="form-label">Filtrar por mes</label>
+              <input id="filtro-mes" class="form-control" type="month">
+            </div>
+            <div class="col-6 col-lg-auto">
+              <button id="limpiar-filtro" class="btn btn-outline-secondary w-100" type="button">
+                Ver todos
+              </button>
+            </div>
+            <div class="col-6 col-lg-auto ms-lg-auto">
+              <a id="exportar-csv" class="btn btn-outline-primary w-100" href="/api/movimientos/exportar.csv">
+                Exportar CSV
+              </a>
+            </div>
+            <div class="col-12 col-lg-auto">
+              <button class="btn btn-primary w-100" type="button" data-bs-toggle="modal" data-bs-target="#modal-movimiento">
+                Agregar movimiento
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header bg-white py-3">
+          <h2 class="h5 mb-0">Movimientos</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Concepto</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Tipo</th>
+                <th scope="col" class="text-end">Monto</th>
+                <th scope="col" class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="lista-movimientos">
+              <tr><td colspan="6" class="text-center text-secondary py-4">Cargando movimientos…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <p class="small text-secondary mt-3 mb-0">Aplicación académica de demostración. No ingreses información financiera sensible.</p>
+      </div>
+    </main>
+
+    <div class="modal fade" id="modal-movimiento" tabindex="-1" aria-labelledby="modal-titulo" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="form-movimiento">
+            <div class="modal-header">
+              <h2 id="modal-titulo" class="modal-title fs-5">Agregar movimiento</h2>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="fecha" class="form-label">Fecha</label>
+                <input id="fecha" name="fecha" type="date" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label for="concepto" class="form-label">Concepto</label>
+                <input id="concepto" name="concepto" type="text" class="form-control" maxlength="120" required>
+              </div>
+              <div class="mb-3">
+                <label for="categoria" class="form-label">Categoría</label>
+                <input
+                  id="categoria"
+                  name="categoria"
+                  type="text"
+                  class="form-control"
+                  list="categorias"
+                  maxlength="60"
+                  required
+                >
+                <datalist id="categorias">
+                  <option value="Alimentación"></option>
+                  <option value="Transporte"></option>
+                  <option value="Vivienda"></option>
+                  <option value="Servicios"></option>
+                  <option value="Salud"></option>
+                  <option value="Educación"></option>
+                  <option value="Entretenimiento"></option>
+                  <option value="Salario"></option>
+                  <option value="Otros"></option>
+                </datalist>
+              </div>
+              <div class="mb-3">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select id="tipo" name="tipo" class="form-select" required>
+                  <option value="gasto">Gasto</option>
+                  <option value="ingreso">Ingreso</option>
+                </select>
+              </div>
+              <div>
+                <label for="monto" class="form-label">Monto (MXN)</label>
+                <input
+                  id="monto"
+                  name="monto"
+                  type="number"
+                  class="form-control"
+                  min="0.01"
+                  max="9999999999.99"
+                  step="0.01"
+                  required
+                >
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar movimiento</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

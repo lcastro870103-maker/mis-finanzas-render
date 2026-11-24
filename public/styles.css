@@ -1,0 +1,21 @@
+body {
+  background-color: #f5f7fb;
+}
+
+.summary-card,
+.card {
+  border-color: #e5e9f0;
+  box-shadow: 0 0.125rem 0.5rem rgb(24 39 75 / 5%);
+}
+
+.summary-card .card-body {
+  padding: 1.25rem;
+}
+
+.table th {
+  white-space: nowrap;
+}
+
+.login-card {
+  max-width: 28rem;
+}
